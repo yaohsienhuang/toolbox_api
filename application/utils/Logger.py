@@ -21,7 +21,7 @@ class init_logging:
             self.logger.handler_set = True
 
 class Logger(init_logging):
-    def __init__(self,logger_name,log_folder='log/'):
+    def __init__(self,logger_name,log_folder):
         super().__init__(logger_name,log_folder)
     
     def catch(self,func):

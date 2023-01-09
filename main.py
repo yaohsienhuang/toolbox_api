@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-init_routers(app)
+init_routers(app,'application/routers')
 
 if __name__=='__main__':
     uvicorn.run(app)
