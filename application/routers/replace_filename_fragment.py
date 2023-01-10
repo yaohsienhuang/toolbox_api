@@ -10,6 +10,7 @@ from ..utils.FileProcessing import FileProcessing
 router = APIRouter()
 
 @router.post('/replace_filename_fragment', tags=['File operations'])
+@logger.catch_router
 def replace_filename_fragment(
     request: Request,
     path: Union[str, pathlib.Path] = Query(default='/tf/cp1ai01/A', description="填入路徑 (A)"),
@@ -19,10 +20,7 @@ def replace_filename_fragment(
     '''
     - 主要功能 : filename 中符合 replace_dict.key 者，以 replace_dict.value 取代
     '''
-    logger.pin(__name__, f'client_host_ip={request.client.host}')
     path = os.path.normpath(path.strip('\u202a'))
-    logger.pin(
-        __name__, f'path={path}')
 
     status, message = FileProcessing.replace_filename_fragment(
         path=path,

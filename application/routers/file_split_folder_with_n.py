@@ -10,6 +10,7 @@ from ..utils.FileProcessing import FileProcessing
 router = APIRouter()
 
 @router.post('/file_split_folder_with_n', tags=['File operations'])
+@logger.catch_router
 def file_split_folder_with_n(
     request: Request,
     source_path: Union[str, pathlib.Path] = Query(default='/tf/cp1ai01/A', description="填入路徑 (A)"),
@@ -21,12 +22,9 @@ def file_split_folder_with_n(
     '''
     - 主要功能：資料夾分拆 (A splits to C subdirs with n)
     '''
-    logger.pin(__name__, f'client_host_ip={request.client.host}')
     source_path = os.path.normpath(source_path.strip('\u202a'))
     target_path = os.path.normpath(target_path.strip('\u202a'))
     mode = 'copy' if copy_mode else 'move'
-    logger.pin(
-        __name__, f'source_path={source_path}; target_path={target_path}')
 
     status, message = FileProcessing.split_folder_with_n(
         source=source_path,

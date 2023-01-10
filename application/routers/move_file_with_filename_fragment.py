@@ -12,6 +12,7 @@ router = APIRouter()
 
 
 @router.post('/file_transfer_with_filename_fragment', tags=['File operations'])
+@logger.catch_router
 def file_transfer_with_filename_fragment(
     request: Request,
     source_path: Union[str, pathlib.Path] = Query(default='/tf/cp1ai01/...', description="填入路徑 (from A)"),
@@ -23,12 +24,9 @@ def file_transfer_with_filename_fragment(
     '''
     - 主要功能：當 filename 包含指定字串進行資料轉移 (from A to B when fragment in filename)
     '''
-    logger.pin(__name__, f'client_host_ip={request.client.host}')
     source_path = os.path.normpath(source_path.strip('\u202a'))
     target_path = os.path.normpath(target_path.strip('\u202a'))
     mode = 'copy' if copy_mode else 'move'
-    logger.pin(
-        __name__, f'source_path={source_path}; target_path={target_path}; extension={extension}; mode={mode}')
 
     status, message = FileProcessing.file_transfer_with_filename_fragment(
         source=source_path,

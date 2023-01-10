@@ -11,6 +11,7 @@ from ..utils.FileProcessing import FileProcessing
 router = APIRouter()
 
 @router.post('/extract_image_xml_both_exist', tags=['XML operations'])
+@logger.catch_router
 def extract_image_xml_both_exist(
     request: Request,
     source_path: Union[str, pathlib.Path] = Query(default='/tf/cp1ai01/A', description="填入路徑 (from A)"),
@@ -21,12 +22,9 @@ def extract_image_xml_both_exist(
     '''
     - 主要功能：移動同時存在 image 與 XML 的檔案
     '''
-    logger.pin(__name__, f'client_host_ip={request.client.host}')
     source_path = os.path.normpath(source_path.strip('\u202a'))
     target_path = os.path.normpath(target_path.strip('\u202a'))
     mode = 'copy' if copy_mode else 'move'
-    logger.pin(
-        __name__, f'source_path={source_path}; target_path={target_path}; extension={extension}; mode={mode}')
 
     status, message = FileProcessing.extract_image_xml_both_exist(
         source=source_path,

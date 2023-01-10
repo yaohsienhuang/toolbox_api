@@ -3,6 +3,7 @@ import sys
 import traceback
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from functools import wraps
 
 class init_logging:
     def __init__(self,logger_name,log_folder):
@@ -21,39 +22,63 @@ class init_logging:
             self.logger.handler_set = True
 
 class Logger(init_logging):
-    def __init__(self,logger_name,log_folder):
+    def __init__(self,logger_name,log_folder='log/'):
         super().__init__(logger_name,log_folder)
     
     def catch(self,func):
-        def deli_args(*args,**kwargs):
-            self.title=func.__qualname__
-            self.logger.info('[%s] start...'%self.title)
+        def wrapper(*args,**kwargs):
+            title=func.__qualname__
+            self.logger.info('[%s] start...'%title)
             
             try:
                 gen=func(*args,**kwargs)
             except Exception as e:
                 errMsg=self.error_message(e)
-                self.logger.warning('[%s] %s'% (self.title ,str(errMsg)))
+                self.logger.warning('[%s] %s'% (title ,str(errMsg)))
                 return False,str(errMsg)
             
             try:
                 while True:
                     msg=next(gen)
-                    self.pin(self.title,msg)
+                    self.pin(title,msg)
                     
             except StopIteration as result:
                 return True,result.value
             
             except Exception as e:
                 errMsg=self.error_message(e)
-                self.logger.warning('[%s] %s'% (self.title ,str(errMsg)))
+                self.logger.warning('[%s] %s'% (title ,str(errMsg)))
                 return False,str(errMsg)
                 
             finally:
-                self.logger.info('[%s] end.'% self.title)
+                self.logger.info('[%s] end.'% title)
             
-        return deli_args
+        return wrapper
     
+    def catch_router(self,func):
+        @wraps(func)
+        async def wrapper(*args,**kwargs):
+            title=func.__qualname__
+            self.pin(title, f'args={args}; kwargs={kwargs}')
+            if  'request' in kwargs:
+                ip=kwargs['request'].client.host
+                self.pin(title, f'client_host_ip={ip}')
+                
+            try:
+                result= func(*args,**kwargs)
+            
+            except Exception as e:
+                errMsg=self.error_message(e)
+                self.logger.warning('[%s] %s'% (title ,str(errMsg)))
+                return False,str(errMsg)
+                
+            finally:
+                self.logger.info('[%s] end.'% title)
+            
+            return result
+            
+        return wrapper
+            
     def pin(self,title, msg):
         self.logger.info('[%s] msg : %s '% (title,msg))
         
